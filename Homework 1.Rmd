@@ -1,0 +1,134 @@
+---
+title: "Homework 1"
+author: "Yitao Tian"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Question 1
+## 1(a)
+```{r 1a}
+library( MASS )
+smokingstatus <- factor( birthwt$smoke )
+levels( smokingstatus ) <- c( "no", "yes" )
+# smokingstatus
+htstatus <- factor( birthwt$ht )
+levels( htstatus ) <- c( "no", "yes" )
+# htstatus
+birthweight <- cbind( birthwt, smokingstatus, htstatus )
+birthweight <- birthweight[ ,c(-5,-7) ]
+head( birthweight, 10 )
+```
+## 1(b)
+```{r 1b}
+match <- birthweight[
+  `smokingstatus`=="yes"
+  & `htstatus`=="no", ]
+avgWeight <- mean( match$bwt )
+print(avgWeight)
+```
+## 1(c)
+```{r 1c}
+attach( birthweight )
+newdata <- birthweight[
+  `race`==1
+  & `smokingstatus`=="no", ]
+medWeight <- median( newdata$bwt )
+print( medWeight )
+```
+## 1(d)
+```{r 1d}
+attach( birthweight )
+both <- birthweight[
+  `smokingstatus`=="yes"
+  & `htstatus`=="yes", ]
+sort( both$bwt, decreasing=T )
+```
+# Question 2
+## 2(a)
+```{r 2a}
+library( tidyverse )
+NewYorkData <- read_csv( "X:/Downloads - Data Drive/NewYork.csv" )
+head( NewYorkData, 10 ); tail( NewYorkData, 10 )
+```
+## 2(b)
+```{r 2b}
+attach( NewYorkData )
+b <- NewYorkData[
+  `roomtype`=="Private room"
+  & `borough`=="Brooklyn", ]
+bPPN <- mean( b$price )
+q <- NewYorkData[
+  `roomtype`=="Private room"
+  & `borough`=="Queens", ]
+qPPN <- mean( q$price )
+print( c( "Brooklyn has the cheapest average price per night at",
+          round( bPPN, digits=2 ) ) )
+```
+## 2(c)
+```{r 2c}
+attach( NewYorkData )
+Subdata <- NewYorkData[
+  `calculated_host_listings_count`<4
+  & `borough`=="Bronx", ]
+medPrice <- median( (Subdata[Subdata$`roomtype`=="Entire home/apt",])$price )
+```
+## 2(d)
+```{r 2d}
+f <- factor( NewYorkData$roomtype )
+roomType <- tibble(
+  "Entire home/apt"=sum( f=="Entire home/apt" ), 
+  "Private room"=sum( f=="Private room" ),
+  "Shared room"=sum( f=="Shared room" )
+  )
+print( "It seems the most popular type of room in NY AirBnBs are entire rooms/apartments with 5,811 such properties up for rent currently" )
+```
+# Question 3
+## 3(a)
+```{r 3a}
+irisdata <- read.csv( "X:/Downloads - Data Drive/iris.csv" )
+attach( irisdata )
+avgLen <- mean(
+  ( irisdata[`Species`=="Versicolor", ] )
+  $Sepal.Length,
+  na.rm=T
+  )
+print( avgLen )
+```
+## 3(b)
+```{r 3b}
+attach( irisdata )
+n <- sum( Sepal.Width<3.6 & Petal.Length<5.2, na.rm=T )
+print( n )
+```
+## 3(c)
+```{r 3c}
+attach( irisdata )
+n <- sum( is.na(Sepal.Length) )
+print( n )
+```
+## 3(d)
+```{r 3d}
+library( tibble )
+attach( irisdata )
+naRM <- irisdata[ complete.cases(irisdata), ]
+avg <- mean( naRM$`Sepal.Length` )
+irisdata[["Sepal.Length"]][ which(is.na(Sepal.Length)) ] <- avg
+greaterthan <- irisdata[ `Sepal.Length`>avg, ]
+extracted <- tibble(
+  'Petal Length'=greaterthan$`Petal.Length`,
+  'Petal Width'=greaterthan$`Petal.Width`
+)
+print( extracted )
+```
+
+
+
+
+
+
+

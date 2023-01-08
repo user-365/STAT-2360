@@ -1,0 +1,117 @@
+---
+title: "Homework2"
+author: "Yitao Tian"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+suppressMessages(library(tidyverse))
+library(dplyr)
+```
+
+# Question 1
+## (a)
+```{r 1a}
+newdata <- read.csv("X:/Downloads - Data Drive/Health.csv")
+Subdata <- filter(newdata, newdata$Stress_Level == "Medium") %>%
+  select(-X) %>% 
+  select_if(is.numeric) %>%
+  sapply(quantile, probs=c(.25,.75)) %>% 
+  print
+```
+## (b)
+```{r 1b}
+newdata %>%
+  aggregate(by=list(.$Stress_Level), FUN=mean) %>% 
+  select(Group.1,Weight)
+```
+# Question 2
+```{r 2}
+collegedata0708 <- read.csv("X:/Downloads - Data Drive/MERGED2007_08_PP.csv",
+                            na=c("NULL","PrivacySuppressed")) %>%
+  as_tibble() %>% 
+  filter(ICLEVEL==1 &
+           REGION==6 &
+           MAIN==1) %>%
+  mutate(ratio=MD_EARN_WNE_P10/TUITIONFEE_IN) %>% 
+  select(INSTNM, STABBR, CITY, ratio) %>%
+  arrange(desc(ratio)) %>% 
+  print(n=25, width=Inf)
+```
+
+# Question 3
+## (a)
+```{r 3a}
+library(readxl)
+crimedata <- read_excel("X:/Downloads - Data Drive/table-1.xls",
+                        range= "A4:V24")
+crimedata[2,1]="2001"
+crimedata[19,1]="2018"
+cnames <- c("Year","Pop","Vc","Vcr","Manm","Manmr","Rrd","Rrdr","Rld","Rldr","Rob","Robr","Aa","Aar","Pc","Pcr","Bur","Burr","Lt","Ltr","Mvt","Mvtr")
+crimedata <- setNames(crimedata,cnames)
+aes <- aes(x=Year,y=Vcr)
+labs <- labs(x="Time",y="Violent Crime Rate")
+title <- ggtitle("The violent crime rate versus time")
+
+ggplot(crimedata, aes) +
+  geom_point() +
+  geom_line(aes(group=1)) +
+  labs +
+  title
+```
+## (b)
+```{r 3b}
+labs <- labs(x="Time",y="Violent Crime Rate")
+title <- ggtitle("The rates of each type of violent crime")
+
+crimedata %>% 
+  select("Year","Vcr","Manmr","Rrdr","Rldr","Robr","Aar") %>% 
+  pivot_longer(cols=c("Vcr","Manmr","Rrdr","Rldr","Robr","Aar"),
+               names_to="Var",
+               values_to="Val") %>%
+  ggplot(aes(x=Year,y=Val,color=Var)) +
+  geom_point() +
+  geom_line(aes(group=Var)) +
+  labs +
+  title
+```
+## (c)
+```{r 3c}
+aes <- aes(x=Year, y=Pcr)
+labs <- labs(x="Time", y="Property crime rate")
+title <- ggtitle("The Property crime rate versus time")
+
+crimedata %>%
+  ggplot(aes) +
+  geom_point() +
+  geom_line(aes(group=1)) +
+  labs +
+  title
+```
+## (d)
+```{r 3d}
+labs <- labs(x="Time",y="Property crime rate")
+title <- ggtitle("The Property crime rate versus time")
+
+crimedata %>% 
+  select(Year, Burr, Ltr, Mvtr, Pcr) %>% 
+  pivot_longer(cols=c("Burr", "Ltr", "Mvtr", "Pcr"),
+               names_to="Var",
+               values_to="Val") %>% 
+  ggplot(aes(x=Year,y=Val,color=Var)) +
+  geom_point() +
+  geom_smooth(formula=y~x) +
+  labs +
+  title
+```
+## (e)
+It seems that each type of crime (whether it's violent crime or property crime)
+has been steadily decreasing over the last two decades.
+
+For violent crime, the types of violent crime in descending order of rate
+is assault, manslaughter, rape (legacy definition), robbery, and rape (updated).
+
+For property crime, the types of property crime in descending occurence rate
+is burglary, larceny-theft, and motor vehicle theft.

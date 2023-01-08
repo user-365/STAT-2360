@@ -1,0 +1,180 @@
+---
+title: "Homework 4"
+author: "Yitao Tian"
+date: "`r Sys.Date()`"
+output: 
+    html_document: 
+        toc: true
+        toc_float: true
+        theme: cerulean
+---
+```{r setup, include=FALSE}
+#knitr::opts_chunkset(echo = TRUE)
+suppressMessages(library(tidyverse))
+suppressMessages(library(dplyr))
+```
+
+# Question 1
+## 1(a)
+```{r 1a}
+parsum <- function(x, n) {
+    partial <- 0
+    for (i in 1:n) {
+       partial <- partial + (exp(-x) * x^i) / factorial(i)
+    }
+    return(partial)
+}
+parsum(x=10, n=15)
+```
+
+## 1(b)
+```{r 1b}
+Printchar <- function(Lst) {
+   for (item in Lst) {
+      if (is.character(item)) {
+        print(item)
+      }
+   }
+}
+Printchar(Lst = list("A", 2, "B", 4, "ANDY"))
+```
+
+## 1(c)
+```{r 1c}
+series <- function(x, n) {
+   partial <- 1
+   for (i in 1:n) {
+    partial <- partial + (x^i) / (i)
+   }
+   return(partial)
+}
+series(x=2, n=5)
+```
+
+# Question 2
+## 2(a)
+```{r 2a}
+restaurant <- read.table(
+    "X:/Downloads - Data Drive/Restaurant.txt",
+    header=TRUE
+)
+datatable <- xtabs(
+    formula = Count ~ (Age_Group + Food_preference),
+    data = restaurant
+)
+datatable
+```
+
+## 2(b)
+```{r 2b}
+food_pref <- margin.table(
+    x = datatable,
+    margin = c("Food_preference")
+)
+(food_pref[["Fish"]] + food_pref[["Steak"]]) / sum(food_pref)
+```
+
+## 2(c)
+```{r 2c}
+age <- prop.table(
+    x = datatable,
+    margin = c("Food_preference")
+)
+age[, "Fish"]
+```
+
+## 2(d)
+
+Null Hypothesis: no relation
+
+Alternative Hypothesis: there is a relation
+between Food preference and Age group
+
+Alpha: 0.05
+```{r 2d}
+chisq <- chisq.test(datatable)
+chisq
+```
+
+The p-value of this test was 0.000719, which is less than the alpha of 0.05.
+
+Therefore, we have sufficient evidence to reject the null hypothesis,
+and conclude that there is a relation between Food preference and Age group for this sample.
+
+## 2(e)
+```{r 2e}
+round(chisq$expected, 0)
+chisq$observed
+```
+- [x] There are two categorical variables being compared: Food preference and Age group.
+- [x] There are a minimum of 10 observations per combination of categories (min. 12).
+- [x] The sample was randomly selected ("A survey of 736 randomly chosen customers...").
+- [x] The sample size is greater than 50 (sample size: 736).
+- [x] The items in the samples are independent.
+
+## 2(f)
+```{r 2f}
+mosaicplot(
+    datatable,
+    shade = TRUE,
+    xlab = "Age Group",
+    ylab = "Food Preference"
+)
+```
+
+More adults and seniors dine here than children.
+
+Seniors eat more pasta than kids and adults.
+
+Kids eat more veggies and fish than adults and seniors.
+
+Kids eat the least steak out of all age groups.
+
+Seniors eat the least veggies out of all age groups.
+
+# Question 3
+## 3(a)
+```{r 3a}
+identification <- array(
+    data=c(132, 176, 127, 42, 6, 12, 172, 129, 130, 56, 4, 15),
+    dim=c(3, 2, 2),
+    dimnames=list(
+        "Party Identification" = as.factor(c("Democrat", "Republican", "Independent")),
+        "Race" = as.factor(c("White", "Black")),
+        "Gender" = as.factor(c("Female", "Male"))
+    )
+)
+identification
+```
+
+## 3(b)
+```{r 3b}
+margin.table(
+    identification,
+    margin = c("Race", "Party Identification")
+)
+```
+
+## 3(c)
+
+Null Hypothesis: no association
+
+Alternative Hypothesis: there is an association between Race and Party Identification.
+
+Alpha: 0.05
+```{r 3c}
+chisq.test(as.matrix(identification))
+```
+
+Since the Chi-squared test resulted in a p-value of less than 2.2e-16
+for the given probabilities, which is itself less than Alpha,
+we have sufficient evidence to reject the null hypothesis
+and conclude that there is an association between Race and Party Identification.
+
+## 3(d)
+```{r 3d}
+prop.table(
+    identification,
+    margin = c(2, 3)
+)[2,1,]
+```

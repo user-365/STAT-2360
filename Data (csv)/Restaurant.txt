@@ -1,0 +1,13 @@
+Food_preference Age_Group  Count
+Fish	        Kids	   27
+Steak	        Kids	   12
+Veggie	        Kids	   21
+Pasta	        Kids	   22
+Fish	        Adults	   105
+Steak	        Adults	   72
+Veggie	        Adults	   75
+Pasta	        Adults	   72
+Fish	        Seniors    94
+Steak	        Seniors	   86
+Veggie	        Seniors	   42
+Pasta	        Seniors	   108

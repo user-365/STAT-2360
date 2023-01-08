@@ -1,0 +1,189 @@
+---
+title: "Homework 3"
+author: "Yitao Tian"
+date: "`r Sys.Date()`"
+output: 
+    html_document: 
+        toc: true
+        toc_float: true
+        theme: cerulean
+---
+
+```{r setup, include=FALSE, message=FALSE}
+library(knitr)
+# knitr::opts_chunkset(echo = TRUE)
+# install.packages("httpgd")
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+# Question 1
+## (a)
+```{r 1a}
+require(ggplot2)
+
+efficiency <- factor(mpg$cty >= 20)
+levels(efficiency) <- list("high"="TRUE", "low"="FALSE")
+
+newdata <- cbind(mpg, efficiency)
+```
+
+## (b)
+```{r 1b}
+require(ggplot2)
+
+drv1 <- as.factor(mpg$drv)
+levels(drv1) <- list(
+    "front-wheel drive"="f",
+    "rear-wheel drive"="r",
+    "4wd"="4"
+)
+
+mpg %>%
+    ggplot(aes(x=cty, y=displ, color=drv1)) +
+    geom_point() +
+    labs(
+        title="City mpg vs Engine Displacement",
+        x="City Miles per gallon",
+        y="Engine Displacement",
+        color="Type of Drive Train"
+    ) +
+    scale_color_manual(
+        labels=c("front-wheel drive", "rear-wheel drive", "4wd"),
+        values=c("blue", "green", "red")
+    )
+```
+
+Front-wheel drives have smaller engine displacements than four-wheel drives, which in turn have smaller enginge displacements than rear-wheel drives.
+
+## (c)
+```{r 1c}
+mpg %>%
+    ggplot(aes(sample = hwy)) +
+    stat_qq() +
+    stat_qq_line()
+shapiro.test(mpg$hwy)
+```
+
+Null Hypothesis: hwy variable is normally distributed
+
+Choose alpha level to be 0.05
+
+The Shapiro-Wilk test results in a p-value of 2.999e-06
+
+The p-value is less than alpha, so i reject the null hypothesis.
+
+There is evidence hwy data are not normally distributed.
+
+# Question 2
+## (a)
+```{r 2a}
+require(tibble)
+require(readr)
+
+d <- read_csv("X:/Downloads - Data Drive/Sales_data.csv")
+
+# Line plot of total profit
+d %>%
+    ggplot(aes(x = month_number, y = total_profit)) +
+    geom_point() +
+    geom_line(aes(color = "red", group = 1)) +
+    labs(
+        title = "company sales data of last year",
+        x = "Month number",
+        y = "Profit in dollars"
+    ) +
+    scale_x_continuous(breaks = 1:12)
+```
+
+Sales on an upward trend as the year progresses.
+
+Sales are at its highest in November, and second highest in August.
+
+Sales are at its lowest in February.
+
+## (b)
+```{r 2b}
+require(tidyr)
+# Line chart of sales for each product
+d %>%
+    select(-c(total_units,total_profit)) %>%
+    pivot_longer(
+        cols = -month_number,
+        names_to = "Product",
+        values_to = "Unit"
+    ) %>%
+    ggplot(aes(
+        x = month_number,
+        y = Unit,
+        color = Product
+    )) +
+    geom_point() +
+    geom_line(aes(color = Product, group = Product)) +
+    labs(
+        title = "Company sales data by product",
+        x = "Month number",
+        y = "Units"
+    ) +
+    scale_x_continuous(breaks = 1:12)
+```
+
+The products in order of popularity are:
+
+Bathing soap, toothpaste, facecream, shampoo, and moisturizer.
+
+Bathing soap and toothpaste sales trend upward as the year goes on.
+
+People have bought more than twice as much bathing soap in December than in February.
+
+## (c)
+```{r 2c}
+# Bar chart of facewash and face cream sales
+d %>%
+    select(month_number,facecream,facewash) %>% 
+    pivot_longer(
+        cols = -month_number,
+        names_to = "Product",
+        values_to = "Unit"
+    ) %>%
+    ggplot(aes(
+        x = month_number,
+        y = Unit,
+        fill = Product
+    )) +
+    geom_bar(
+        position = "dodge",
+        stat = "identity"
+    ) +
+    labs(
+        title = "Comparison between facecream and facewash sales",
+        x = "Month Number",
+        y = "Units"
+    ) +
+    scale_x_continuous(breaks = 1:12)
+```
+
+Face cream consistently outsells face wash.
+
+Often, face cream sales are twice as much as facewash sales.
+
+# Question 3
+```{r 3}
+# Function definition
+tmpFn <- function(x) {
+    ifelse(x < 0, (x^2) + (2 * x) + 3,
+        ifelse(x < 2, x+3, (x^2)+(4*x)-7))
+}
+# Input Vector
+input <- seq(
+    from = -3,
+    to = 3,
+    length.out = 50
+)
+# Dataframing
+df <- data.frame(cbind(input, tmpFn(input)))
+# Plotting
+ggplot(df, aes(x = input, y = V2)) +
+    geom_point()
+```

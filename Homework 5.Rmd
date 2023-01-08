@@ -1,0 +1,205 @@
+---
+title: "Homework 5"
+author: "Yitao Tian"
+date: "`r Sys.Date()`"
+output: 
+    html_document: 
+        toc: true
+        toc_float: true
+        theme: sandstone
+---
+
+```{r setup, include=FALSE}
+# knitr::opts_chunkset(echo = TRUE)
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+suppressMessages(install.packages(
+    "gridExtra",
+    repos = "http://cran.us.r-project.org"
+))
+suppressMessages(library(gridExtra))
+suppressMessages(install.packages(
+    "geometry",
+    repos = "http://cran.us.r-project.org"
+))
+suppressMessages(library(geometry))
+```
+
+# Question 1
+## 1(a)
+```{r 1a}
+set.seed(123)
+# Simulate rolling the unfair die 10000 times
+die_sample <- function(sample_size) {
+   sample(1:6, sample_size, replace = TRUE, prob = c(3 / 8, rep(1 / 8, 5)))
+}
+DieOutcome <- replicate(10000,
+    die_sample(1),
+    simplify = "matrix")
+# plot the frequency of each outcome by drawing the histogram
+ggplot(data.frame(DieOutcome), aes(x = DieOutcome)) +
+    geom_histogram(bins = 10, fill = "RED", color = "BLUE")
+```
+## 1(b)
+```{r 1b}
+set.seed(123) # same as in part (a)
+xbar10 <- c()
+xbar30 <- c()
+xbar100 <- c()
+xbar1000 <- c()
+# generate 10000 samples of size 10, 30, 100, and 1000 respectively
+for (identifier in 1:10000) {
+    # calculate the means for each sample for different sample sizes
+    xbar10 <- c(xbar10, mean(die_sample(10)))
+    xbar30 <- c(xbar30, mean(die_sample(30)))
+    xbar100 <- c(xbar100, mean(die_sample(100)))
+    xbar1000 <- c(xbar1000, mean(die_sample(1000)))
+} # for
+xbar10 <- data.frame(xbar10)
+xbar30 <- data.frame(xbar30)
+xbar100 <- data.frame(xbar100)
+xbar1000 <- data.frame(xbar1000)
+```
+## 1(c)
+```{r 1c}
+plot.xbar10 <- ggplot(data.frame(xbar10), aes(x = xbar10)) +
+    geom_histogram(bins = 10, fill = "PINK", color = "BLACK") +
+        labs(x = "Die roll", title = "n=10")
+plot.xbar30 <- ggplot(data.frame(xbar30), aes(x = xbar30)) +
+    geom_histogram(bins = 10, fill = "GREEN", color = "BLACK") +
+        labs(x = "Die roll", title = "n=30")
+plot.xbar100 <- ggplot(data.frame(xbar100), aes(x = xbar100)) +
+    geom_histogram(bins = 10, fill = "BLUE", color = "BLACK") +
+        labs(x = "Die roll", title = "n=100")
+plot.xbar1000 <- ggplot(data.frame(xbar1000), aes(x = xbar1000)) +
+    geom_histogram(bins = 10, fill = "ORANGE", color = "BLACK") +
+        labs(x = "Die roll", title = "n=1000")
+plots_list <- list(plot.xbar10, plot.xbar30, plot.xbar100, plot.xbar1000)
+grid.arrange(grobs = plots_list, ncol = 4)
+```
+
+### Compare these histograms based on their spread and explain the reason.
+
+As the sample sizes get bigger (from 10 to 1000), the spread of the corresponding
+histograms becomes tighter. This is due to the variance in the sample means decreasing
+as sample size increases, which is in turn due to the Law of Large Numbers.
+
+
+# Question 2
+## 2(a)
+```{r 2a}
+# Import this data in R using a suitable function
+newdata <- read.csv(
+    "X:/Downloads - Data Drive/Countries.csv",
+    na.strings = "."
+)
+# Remove all these missing values
+data <- remove_missing(newdata)
+# Draw a scatterplot to predict the Income based on the Marriage age
+ggplot(data, aes(x = MarriageAge, y = Income)) +
+    geom_point() +
+    geom_smooth(method = "lm")
+```
+
+### Do you see any pattern? Comment on it.
+
+I see a pattern where the dots of the scaterplot "snake" in an obvious way
+back and forth across the regression line.
+
+## 2(b)
+```{r 2b}
+# Produce a scatterplot using the log (base 10) Income variable
+# versus the Marriage age
+ggplot(data, aes(x = MarriageAge, y = log10(Income))) +
+    geom_point() +
+    geom_smooth(method = "lm")
+```
+
+### Comment on any pattern.
+
+Compared to before (without logarithm transformation), this scatterplot looks
+a lot more randomly scattered.
+
+### Would you prefer the plot in part (a) or part (b)
+
+In predicting the Income with a linear model, i would prefer the plot in part (b)
+simply because it looks a lot linear (i.e., follows the overlaid regression line)
+more, whereas the plot in part (a) appears to have a more curvy shape.
+
+## 2(c)
+```{r 2c}
+# Fit a linear regression model for the plot you choose
+linear_fitted_data <- lm(log10(Income) ~ MarriageAge, data) %>%
+# Print the output
+    print
+```
+
+**Prediction Equation:** predicted_income = 1.4883 + 0.1032 * MarriageAge
+
+## 2(d)
+```{r 2d}
+# Calculate the standardized residual from the model you chose
+s_residual <- rstandard(linear_fitted_data)
+# Plot this standardized residual vs Marriage age
+ggplot(data.frame(s_residual), aes(x = data$MarriageAge, y = s_residual)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    # Add a horizontal line at the points -3,-2,2,3
+    geom_hline(yintercept = c(-3, -2, 2, 3), lty = "dashed", color = "RED") +
+    labs(
+        x = "Marriage Age",
+        y = "Standardized Residuals",
+        title = "standardized residual vs Marriage age"
+    )
+# Find which standardized residual is the largest
+# and the corresponding standardized residual value
+# Print the output
+which.max(abs(s_residual))
+s_residual[which.max(abs(s_residual))]
+```
+
+# Question 3
+## 3(a)
+```{r 3a}
+pnorm(
+    q = 24.1,
+    mean = 24.1,
+    sd = 6.30
+) - pnorm(
+    q = 19.2,
+    mean = 24.1,
+    sd = 6.30
+)
+```
+## 3(b)
+```{r 3b}
+qnorm(
+    p = 0.14,
+    mean = 24.1,
+    sd = 6.30,
+    lower.tail = FALSE
+) %>%
+    print
+```
+## 3(c)
+```{r 3c}
+# Find the mean of x
+x <- c(70, 75, 78, 80, 85, 90, 95)
+p_x <- c(0.25, 0.08, 0.11, 0.14, 0.17, 0.19, 0.06)
+mean_x <- geometry::dot(x, p_x, d = TRUE)
+# Generate 500 samples of size 30 from the x with replacement
+# Calculate the mean of each sample
+set.seed(120)
+xbar <- replicate(500, mean(sample(x, 30, replace = TRUE, prob = p_x)))
+# Draw the histogram of these 500 sample means
+ggplot(data.frame(xbar), aes(x = xbar)) +
+    geom_histogram(bins = 12) +
+    labs(y = "Density", title = "Histogram of sample means")
+```
+
+
+### Comment on the shape of the histogram. Explain the reason.
+
+The histogram is mound-shaped, since it's denser near the center and
+less dense near the edges. This could be the result of there being more than
+30 replicated sample means, which by the CLT, explains the shape.
